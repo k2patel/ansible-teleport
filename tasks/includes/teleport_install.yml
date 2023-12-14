@@ -1,0 +1,60 @@
+---
+- name: Add Teleport YUM repository
+  yum_repository:
+    name: teleport
+    description: Teleport YUM Repository
+    baseurl: "https://yum.releases.teleport.dev/rhel/{{ ansible_distribution_major_version }}/Teleport/{{ ansible_architecture }}/stable/v{{ teleport_version }}"
+    enabled: true
+    gpgcheck: true
+    gpgkey: https://yum.releases.teleport.dev/gpg
+    repo_gpgcheck: true
+    state: present
+  become: true
+
+- name: Add Postgresql repository
+  yum_repository:
+    name: PostgresSQL
+    description: PostGresql Official YUM Repository
+    baseurl: "https://download.postgresql.org/pub/repos/yum/{{ postgresql_version }}/redhat/rhel-{{ ansible_distribution_major_version }}-{{ ansible_architecture }}/"
+    enabled: true
+    gpgcheck: true
+    gpgkey: "https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG-{{ postgresql_version }}"
+    repo_gpgcheck: true
+    state: present
+  become: true
+  when: (auth is defined) and (auth)
+
+- name: Disable module postgresql
+  ansible.builtin.shell: "/bin/dnf module disable postgresql"
+  become: true
+  when: (auth is defined) and (auth)
+
+- name: Install Teleport
+  dnf:
+    name: teleport-ent
+    state: present
+
+- name: Install PostgreSQL client
+  dnf:
+    name: "{{ item }}"
+    state: present
+  become: true
+  with_items:
+    - "postgresql{{ postgresql_version }}"
+    - "postgresql{{ postgresql_version }}-contrib"
+    - python3-psycopg2
+    - "wal2json{{ postgresql_version }}"
+  when: (auth is defined) and (auth)
+
+- name: Create log folder
+  ansible.builtin.file:
+    path: "{{ teleport_log_file | dirname }}"
+    state: directory
+  become: true
+# - name: Print IP Address
+#   debug:
+#     var: ansible_host
+
+# - name: Print all available facts
+#   ansible.builtin.debug:
+#     var: ansible_facts

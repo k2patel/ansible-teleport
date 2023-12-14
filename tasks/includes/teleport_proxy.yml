@@ -1,0 +1,31 @@
+---
+# - name: Generate CA Pin
+#   ansible.builtin.command: "openssl x509 -in {{teleport_https_ca_file}} -fingerprint -sha256 -noout"
+#   register: teleport_ssl_ca_pin
+
+# - name: Create CA pin facts
+#   ansible.builtin.set_fact:
+#     teleport_ca_pin: "{{ teleport_ssl_ca_pin.stdout | regex_replace('SHA256 Fingerprint=', '') | regex_replace(':', '') | regex_replace('\n', '') | lower }}"
+
+- name: Copy Teleport Proxy configuration
+  ansible.builtin.template:
+    src: teleport-proxy.yml.j2
+    dest: "{{ teleport_config_file }}"
+  become: yes
+  notify: Teleport Service
+
+# # Configure user for the teleport
+# - name: Configure First Admin User
+#   command: /usr/local/bin/tctl users add {{ admin_username }} -p {{ admin_password }} -r admin
+#   ignore_errors: true
+#   register: teleport_user_creation
+#   become: true
+
+# # Configure the teleport domain
+# - name: Configure Teleport Domain
+#   command: "/usr/local/bin/tctl nodes add --ttl=0 --role=proxy --auth={{ auth_server_url }} --addr={{ domain_name }}:443 --labels={{ item }} {{ domain_name }}"
+#   ignore_errors: true
+#   loop: "{{ teleport_node_labels }}"
+#   register: teleport_domain_configuration
+#   become: true
+

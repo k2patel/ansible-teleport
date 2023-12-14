@@ -1,0 +1,6 @@
+- name: Copy Teleport Proxy configuration
+  ansible.builtin.template:
+    src: teleport-agent.yml.j2
+    dest: "{{ teleport_config_file }}"
+  become: yes
+  notify: Teleport Service

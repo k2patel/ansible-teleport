@@ -1,0 +1,90 @@
+---
+version: v3
+teleport:
+  data_dir: "{{ teleport_data_directory }}"
+  advertise_ip: "{{ teleport_host }}"
+  auth_token: "{{ teleport_auth_token }}"
+  ca_pin: "{{ teleport_ca_pin }}"
+  auth_server: "{{ teleport_consul_name }}:{{ teleport_auth_port }}"
+  diag_addr: "{{ teleport_diag_ip }}:{{ teleport_diag_port }}"
+  log:
+    output: {{ teleport_log_file }}
+    severity: INFO
+    format:
+      output: text
+      extra_fields: [level, timestamp, component, caller]
+  connection_limits:
+    max_connections: 1000
+    max_users: 250
+
+auth_service:
+  enabled: false
+
+proxy_service:
+  enabled: true
+  public_addr: "{{ proxy_teleport_consul_name }}:{{ web_listen_port }}"
+  proxy_protocol: off
+  listen_addr: "{{proxy_listen_addr}}:{{proxy_listen_port}}"
+  tunnel_listen_addr: "{{tunnel_listen_addr}}:{{tunnel_listen_port}}"
+  web_listen_addr: "{{web_listen_addr}}:{{web_listen_port}}"
+  peer_listen_addr: "{{peer_listen_addr}}:{{peer_listen_port}}"
+  ssh_public_addr: "{{proxy_teleport_consul_name}}:{{ssh_public_port}}"
+  tunnel_public_addr: "{{proxy_teleport_consul_name}}:{{tunnel_public_port}}"
+  https_keypairs:
+  - key_file: "{{teleport_https_key_file}}"
+    cert_file: "{{teleport_https_cert_file}}"
+  ui:
+    scrollback_lines: 1000
+
+{% if teleport_ssh_service_enabled %}
+ssh_service:
+  enabled: "yes"
+  listen_addr: "{{ teleport_listen_addr }}:{{ teleport_listen_port }}"
+{% if root_variable_hash is defined %}
+{% for key, value in root_variable_hash.items() %}
+  {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+{% if teleport_node_labels is defined %}
+  labels:
+{% for key, value in teleport_node_labels.items() %}
+    {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+{% if teleport_pam is defined %}
+  pam:
+{% for key, value in teleport_pam.items() %}
+    {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+{% if teleport_x11 is defined %}
+  x11:
+{% for key, value in teleport_x11.items() %}
+    {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+{% if teleport_enhanced_recording is defined %}
+  enhanced_recording:
+{% for key, value in teleport_enhanced_recording.items() %}
+    {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+{% if teleport_commands is defined %}
+  commands:
+{% for command_name, details in teleport_commands.items() %}
+  - name: {{ command_name }}
+    command: {{ details.command }}
+    period: {{ details.period }}
+{% endfor %}
+{% endif %}
+{% endif %}
+
+(% if teleport_windows_desktop_service_enabled %)
+windows_desktop_service:
+  enabled: "yes"
+  listen_addr: "0.0.0.0:3028"
+  non_ad_hosts:
+{% for host in non_ad_hosts %}
+  - {{ host }}
+{% endfor %}
+{% end if %}

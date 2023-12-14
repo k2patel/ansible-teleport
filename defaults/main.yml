@@ -1,0 +1,92 @@
+---
+# Common Variables
+teleport_version: 14
+
+teleport_nfs_mount_path: /mnt/teleport
+teleport_data_directory: "/mnt/teleport/data"
+teleport_config_file: "/etc/teleport.yaml"
+teleport_log_file: "/var/lib/teleport/log/teleport.log"
+teleport_diag_ip: "127.0.0.1"
+teleport_diag_port: "3000"
+teleport_cluster_name: "teleport"
+teleport_license_file: "/var/lib/teleport/license.pem"
+teleport_host: "{{ ansible_host }}"
+
+
+# Teleport Proxy Specific Variables
+proxy_teleport_consul_name: "teleproxy.service.consul"
+proxy_listen_addr: "0.0.0.0"
+proxy_listen_port: "3023"
+tunnel_listen_addr: "0.0.0.0"
+tunnel_listen_port: "3024"
+peer_listen_addr: "0.0.0.0"
+peer_listen_port: "3021"
+web_listen_addr: "0.0.0.0"
+web_listen_port: "443"
+ssh_public_port: "3023"
+tunnel_public_port: "3024"
+teleport_https_key_file: "/etc/pki/tls/private/host.key"
+teleport_https_cert_file: "/etc/pki/tls/certs/host.crt"
+teleport_ca_pin: "sha256:aa9s8f7asdfiajd98afo8vua8ds9dfua98dxuv89asufasdfa"
+teleport_auth_token: "as9dfas9d8a90dszvu9xudf9a8sdfas"
+## Can be generated using following command
+# /usr/local/bin/tctl tokens add --ttl=60m --type=proxy
+
+# Teleport Auth Server Specific Variables
+postgresql_version: 13
+
+admin_username: "admin"      # Customize the admin username
+admin_password: "mypassword" # Customize the admin password
+domain_name: "domain.com"   # Customize the Teleport domain name
+auth_server_url: "https://teleauth.domain.com"  # Customize the Teleport authentication server URL
+
+teleport_auth_port: "3025"
+teleport_consul_name: "teleauth.domain.com"
+teleport_proxy_protocol: "off"
+proxy_listener_mode: "multiplex"
+
+# Teleport Agent / Node / SSH Service Specific Variables
+teleport_ssh_service_enabled: true
+teleport_node_name: "{{ inventory_hostname }}"
+node_data_directory: "/var/lib/teleport"
+teleport_listen_addr: "0.0.0.0"
+teleport_listen_port: "3022"
+root_variable_hash:
+  permit_user_env: false
+  disable_create_host_user: true
+  ssh_file_copy: true
+  port_forwarding: true
+teleport_pam:
+  enabled: "no"
+  service_name: "sshd"
+  use_pam_auth: true
+teleport_x11:
+  enabled: "yes"
+  display_offset: 10
+  max_display: 1010
+teleport_enhanced_recording:
+  enabled: false
+  command_buffer_size: 8
+  disk_buffer_size: 128
+  network_buffer_size: 8
+  cgroup_path: "/cgroup2"
+teleport_node_labels:
+  role: service_role
+  environment: dev
+teleport_commands:
+  dev:
+    command: ["/bin/sh", "-c", "hostname | sed 's/[^-]\\+-\\([^-]\\+\\)-.*/\\1/'"]
+    period: 1h0m0s
+  hostname:
+    command: ["hostname", "-s"]
+    period: 1h0m0s
+
+teleport_windows_desktop_service_enabled: true
+non_ad_hosts:
+  - "192.168.1.10"
+
+teleport_db_service_enabled: false
+# teleport_db_databases:
+#   - name: "teleport_postgres"
+#     protocol: "postgres"
+#     uri: "postgres.server.com:5432"

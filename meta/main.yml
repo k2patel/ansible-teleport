@@ -1,0 +1,9 @@
+---
+galaxy_info:
+  author: Ketan Patel <k2patel@live.com>
+  description: Install and configure teleport server and agent.
+  galaxy_tags: [ 'teleport' ]
+  license: MIT
+  min_ansible_version: "2.1"
+dependencies: 
+  - role: community.postgresql

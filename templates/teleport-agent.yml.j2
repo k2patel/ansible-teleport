@@ -1,0 +1,80 @@
+---
+version: v3
+teleport:
+  nodename: "{{ teleport_node_name }}"
+  data_dir: "{{ node_data_directory }}"
+  auth_token: "{{ teleport_auth_token }}"
+  ca_pin: "{{ teleport_ca_pin }}"
+  proxy_server: "{{ proxy_teleport_consul_name }}:{{web_listen_port}}"
+  connection_limits:
+    max_connections: 1000
+    max_users: 250
+  log:
+    output: {{ teleport_log_file }}
+    severity: INFO
+    format:
+      output: text
+      extra_fields: [level, timestamp, component, caller]
+
+ssh_service:
+  enabled: "yes"
+  listen_addr: "{{ teleport_listen_addr }}:{{ teleport_listen_port }}"
+{% if root_variable_hash is defined %}
+{% for key, value in root_variable_hash.items() %}
+  {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+{% if teleport_node_labels is defined %}
+  labels:
+{% for key, value in teleport_node_labels.items() %}
+    {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+{% if teleport_pam is defined %}
+  pam:
+{% for key, value in teleport_pam.items() %}
+    {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+{% if teleport_x11 is defined %}
+  x11:
+{% for key, value in teleport_x11.items() %}
+    {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+{% if teleport_enhanced_recording is defined %}
+  enhanced_recording:
+{% for key, value in teleport_enhanced_recording.items() %}
+    {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+{% if teleport_commands is defined %}
+  commands:
+{% for command_name, details in teleport_commands.items() %}
+  - name: {{ command_name }}
+    command: {{ details.command }}
+    period: {{ details.period }}
+{% endfor %}
+{% endif %}
+
+auth_service:
+  enabled: "no"  # Adjust as needed
+
+proxy_service:
+  enabled: "no"
+
+{% if teleport_db_service_enabled %}
+db_service:
+  enabled: "yes"
+  resources:
+  - labels:
+      "*": "*"
+  databases:
+    {% for db in teleport_db_databases %}
+    - name: "{{ db.name }}"
+      protocol: "{{ db.protocol }}"
+      uri: "{{ db.uri }}"
+      labels:
+        "*": "*"
+    {% endfor %}
+{% endif %}

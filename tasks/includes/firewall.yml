@@ -1,0 +1,64 @@
+---
+- name: Allow Auth service
+  firewalld:
+    port: 3025/tcp
+    permanent: true
+    state: enabled
+  when: (auth is defined) and (auth)
+  notify: Reload Firewalld
+
+- name: Allow proxy service
+  firewalld:
+    port: 3025/tcp
+    permanent: true
+    state: enabled
+  when: (proxy is defined) and (proxy)
+  notify: Reload Firewalld
+
+- name: Allow proxy service
+  firewalld:
+    port: 443/tcp
+    permanent: true
+    state: enabled
+  when: (proxy is defined) and (proxy)
+  notify: Reload Firewalld
+
+- name: Allow proxy service
+  firewalld:
+    port: 3021/tcp
+    permanent: true
+    state: enabled
+  when: (proxy is defined) and (proxy)
+  notify: Reload Firewalld
+
+- name: Allow proxy service
+  firewalld:
+    port: 3024/tcp
+    permanent: true
+    state: enabled
+  when: (proxy is defined) and (proxy)
+  notify: Reload Firewalld
+
+- name: Allow proxy service
+  firewalld:
+    port: 3080/tcp
+    permanent: true
+    state: enabled
+  when: (proxy is defined) and (proxy)
+  notify: Reload Firewalld
+
+- name: Allow teleport agent
+  firewalld:
+    port: 3022/tcp
+    permanent: true
+    state: enabled
+  when: (agent is defined) and (agent) and (teleport_ssh_service_enabled is defined) and (teleport_ssh_service_enabled)
+  notify: Reload Firewalld
+
+- name: Allow Remote Desktop
+  firewalld:
+    port: 3028/tcp
+    permanent: true
+    state: enabled
+  when: (teleport_windows_desktop_service_enabled is defined) and (proxy is defined) and (proxy) and (teleport_windows_desktop_service_enabled)
+  notify: Reload Firewalld

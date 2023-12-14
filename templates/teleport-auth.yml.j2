@@ -1,0 +1,110 @@
+---
+version: v3
+
+teleport:
+  storage:
+    type: postgresql
+    conn_string: "postgresql://{{ postgresql_users['backend'].name }}:{{ postgresql_users['backend'].password }}@{{ postgresql_host }}/{{ postgresql_users['backend'].db }}?sslmode=require"
+    change_feed_conn_string: "postgresql://{{ postgresql_users['backend'].name }}:{{ postgresql_users['backend'].password }}@{{ postgresql_host }}/{{ postgresql_users['backend'].db }}?sslmode=require"
+{#    audit_events_uri:
+      - "postgresql://{{ postgresql_users['audit'].name }}:{{ postgresql_users['audit'].password }}@{{ postgresql_host }}/{{ postgresql_users['audit'].db }}?sslmode=require" #}
+  data_dir: "{{ teleport_data_directory }}"
+  advertise_ip: "{{ teleport_host }}"
+  diag_addr: "{{ teleport_diag_ip }}:{{ teleport_diag_port }}"
+  log:
+    output: {{ teleport_log_file }}
+    severity: INFO
+    format:
+      output: text
+      extra_fields: [level, timestamp, component, caller]
+  connection_limits:
+    max_connections: 1000
+    max_users: 250
+
+auth_service:
+  enabled: true
+  cluster_name: "{{ teleport_cluster_name }}"
+  proxy_protocol: "{{ teleport_proxy_protocol }}"
+{% if proxy_listener_mode is defined %}
+  proxy_listener_mode: "{{ proxy_listener_mode }}"
+{% endif %}
+  license_file: "{{ teleport_license_file }}"
+  listen_addr: "{{ teleport_host }}:{{ teleport_auth_port }}"
+  public_addr: "{{ teleport_consul_name }}:{{ teleport_auth_port }}"
+  authentication:
+    type: local
+    second_factor: off
+    require_session_mfa: false
+  client_idle_timeout: 10m
+  client_idle_timeout_message: "Timed out due to inactivity"
+  web_idle_timeout: 10m
+  keep_alive_interval: 5m
+  keep_alive_count_max: 3
+  message_of_the_day: |
+    NOTICE TO USERS
+    -----------------
+    This computer system is the private property , whether
+    individual, corporate or government. It is for authorized use only. Users
+    (authorized & unauthorized) have no explicit/implicit expectation of privacy
+    Any or all uses of this system and all files on this system may be
+    intercepted, monitored, recorded, copied, audited, inspected, and disclosed
+    to your employer, to authorized site, government, and/or law enforcement
+    personnel, as well as authorized officials of government agencies, both
+    domestic and foreign.
+
+    By using this system, the user expressly consents to such interception,
+    monitoring, recording, copying, auditing, inspection, and disclosure at the
+    discretion of such officials. Unauthorized or improper use of this system
+    may result in civil and criminal penalties and administrative or disciplinary
+    action, as appropriate. By continuing to use this system you indicate your
+    awareness of and consent to these terms and conditions of use. LOG OFF
+    IMMEDIATELY if you do not agree to the conditions stated in this warning.
+
+    Authorized users only. All activity may be monitored and reported.
+
+  # Other Teleport Auth configuration options
+  disconnect_expired_cert: no
+  
+proxy_service:
+  enabled: false
+
+ssh_service:
+  enabled: "yes"
+  listen_addr: "{{ teleport_listen_addr }}:{{ teleport_listen_port }}"
+{% if root_variable_hash is defined %}
+{% for key, value in root_variable_hash.items() %}
+  {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+{% if teleport_node_labels is defined %}
+  labels:
+{% for key, value in teleport_node_labels.items() %}
+    {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+{% if teleport_pam is defined %}
+  pam:
+{% for key, value in teleport_pam.items() %}
+    {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+{% if teleport_x11 is defined %}
+  x11:
+{% for key, value in teleport_x11.items() %}
+    {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+{% if teleport_enhanced_recording is defined %}
+  enhanced_recording:
+{% for key, value in teleport_enhanced_recording.items() %}
+    {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+{% if teleport_commands is defined %}
+  commands:
+{% for command_name, details in teleport_commands.items() %}
+  - name: {{ command_name }}
+    command: {{ details.command }}
+    period: {{ details.period }}
+{% endfor %}
+{% endif %}

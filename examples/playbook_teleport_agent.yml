@@ -1,0 +1,48 @@
+# Playbook for Teleport
+#
+# v1.0    Initial
+#
+# Running:
+#   ansible-playbook -e invgroup=hostgroup_name -e ansible_user=k.patel --ask-pass playbook_teleport.yml
+#
+# Options:
+#   ansible-playbook -e invgroup=<inventory_group> -e ansible_user=<connect_userid> --ask-pass <playbook> {--tags <tag>}
+#
+# Notes:
+#   playbook:        Playbook to run
+#   inventory_group: Inventory Group defined in inventory
+#   connect_userid:  Normally your Personal Userid
+#   password:        Password will be your personal userid password
+#
+# Tags available:
+#   status:             Show Postgresql Status
+---
+
+- name: Playbook for Postgresql
+  hosts: "{{ invgroup | replace('-','_') | upper }}"
+  remote_user: builder
+  gather_facts: no
+  become: True
+
+  pre_tasks:
+    - set_fact:
+        ansible_sudo_pass: "{{ ansible_password }}"
+      tags: always
+    - setup:
+        gather_subset:
+        - '!hardware'
+      tags: always
+
+  tasks:
+    - include_role:
+        role: teleport
+      tags: always
+      no_log: false
+      vars:
+        - agent: true
+        - teleport_auth_token: a9ds8fa9sdufa9s8df7ad98asdfa
+        - teleport_db_service_enabled: true
+        - teleport_db_databases:
+            - name: "teleport_postgres"
+              protocol: "postgres"
+              uri: "postgresql.domain.com:5432"

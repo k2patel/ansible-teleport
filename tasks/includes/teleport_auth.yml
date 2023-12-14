@@ -1,0 +1,30 @@
+---
+- name: Create Teleport data directory
+  ansible.builtin.file:
+    path: "{{ teleport_data_directory }}"
+    state: directory
+  become: yes
+
+- name: Copy license file
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/license.pem"
+    dest: "{{ teleport_license_file }}"
+  become: yes
+
+- name: Configure Teleport Auth with PostgreSQL and NFS
+  template:
+    src: teleport-auth.yml.j2
+    dest: "{{ teleport_config_file }}"
+  become: yes
+  notify: Teleport Service
+
+# Start the Teleport Auth service here.
+# - name: Check if Teleport is already initialized
+#   command: /usr/local/bin/tctl status
+#   register: teleport_status
+#   ignore_errors: true
+#   changed_when: false
+
+# - name: Initialize Teleport if not already initialized
+#   command: /usr/local/bin/tctl configure init
+#   when: "teleport_status.rc not in [0, 2]"

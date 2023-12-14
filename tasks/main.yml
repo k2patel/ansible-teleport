@@ -1,0 +1,21 @@
+---
+- include_tasks: includes/teleport_install.yml
+  when: (auth is defined or proxy is defined or agent is defined) and ((auth is true) or (proxy is true) or (ansible_os_family == "RedHat"))
+
+- include_tasks: includes/teleport_agent.yml
+  when: 
+    - (agent is defined) and (agent and ansible_os_family == "RedHat")
+
+- include_tasks: includes/windows_agent.yml
+  when: 
+    - (agent is defined) and (agent and ansible_os_family == "Windows")
+
+- include_tasks: includes/teleport_auth.yml
+  when: 
+    - auth is defined and auth
+
+- include_tasks: includes/teleport_proxy.yml
+  when:
+    - proxy is defined and proxy
+
+- include_tasks: includes/firewall.yml

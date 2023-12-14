@@ -1,0 +1,44 @@
+---
+- name: Download Teleport Agent for Windows
+  ansible.windows.win_get_url:
+    url: https://get.gravitational.com/teleport-{{ teleport_version }}-windows-amd64-bin.zip
+    dest: C:\Temp\teleport.zip
+  when: agent
+  become: true
+
+- name: Unzip Teleport Agent for Windows
+  ansible.windows.win_unzip:
+    src: C:\Temp\teleport.zip
+    dest: C:\Program Files\Teleport
+  when: agent
+  become: true
+
+- name: Start Teleport Agent for Windows
+  ansible.windows.win_service:
+    name: teleport
+    start_mode: auto
+    state: started
+  when: agent
+  become: true
+
+- name: Ensure Teleport Agent Inbound Rule Exists
+  ansible.windows.win_firewall_rule:
+    name: "Teleport Agent (Inbound)"
+    description: "Allow incoming traffic for Teleport Agent"
+    localport: 3023
+    action: allow
+    protocol: tcp
+    direction: in
+    state: enabled
+  when: teleport_agent_installed
+
+- name: Ensure Teleport Agent Outbound Rule Exists
+  ansible.windows.win_firewall_rule:
+    name: "Teleport Agent (Outbound)"
+    description: "Allow outgoing traffic for Teleport Agent"
+    remoteport: 3080
+    action: allow
+    protocol: tcp
+    direction: out
+    state: enabled
+  when: teleport_agent_installed
